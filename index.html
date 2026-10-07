@@ -38,7 +38,7 @@ button:disabled{opacity:.4}button.on{background:#2a5cff;border-color:#7aa2ff}
 <div id="M" class="ov"><div class="cn a"></div><div class="cn b"></div><div class="cn c"></div><div class="cn d"></div>
 <div class="tb"><b>◢ ORBITAL COMMAND</b><span class="sp"></span><span id="utc"></span><span class="ok">● SYSTEM ONLINE</span></div>
 <div class="ct"><div class="lf"><div class="ey">// MISSION SELECT</div><h1>ORBITAL<br>COMMAND</h1><nav>
-<a class="mr" href="https://claude.ai/artifact/Un4xZH68Ndbfv9j46UKNqZ" target="_blank" rel="noopener"><i>01</i><div><b>Solar Sandbox</b><span>Explore the solar system and place satellites, stations and probes in orbit.</span></div><em>OPEN</em></a>
+<a class="mr" href="./solar-sandbox.html"><i>01</i><div><b>Solar Sandbox</b><span>Explore the solar system and place satellites, stations and probes in orbit.</span></div><em>OPEN</em></a>
 <div class="mr" id="gd"><i>02</i><div><b>Planetary Defence</b><span>Plan orbits to stop incoming threats, guided by Jarvis.</span></div><em>ONLINE</em></div>
 <div class="mr lk"><i>03</i><div><b>Conquest Campaign</b><span>Claim planets and extend your defences.</span></div><em>LOCKED</em></div>
 <div class="mr lk"><i>04</i><div><b>Daily Challenge</b><span>One shared seeded puzzle per day.</span></div><em>LOCKED</em></div>
@@ -49,12 +49,12 @@ button:disabled{opacity:.4}button.on{background:#2a5cff;border-color:#7aa2ff}
 <div class="p row" style="margin-top:8px"><button id="bk">☰ Menu</button><button id="vw">3D</button><button id="bf">📡 Briefing</button><span id="ms" class="row" style="margin:0"></span><span class="sp"></span><label><input type="checkbox" id="ck"> Planning clock</label><b id="clk"></b></div>
 <div class="sp"></div>
 <div class="p" id="dock" style="max-width:640px"><div id="jv"></div>
-<div class="row"><select id="tier"><option>Guided</option><option>Advisor</option><option>Analyst</option></select><button id="vo">🔊</button><select id="ty"></select><select id="op"></select><span id="lc"></span></div>
+<div class="row"><select id="tier"><option>Guided</option><option>Advisor</option><option>Analyst</option></select><button id="vo">🔊</button><button id="stv" title="Stop voice">⏹</button><select id="ty"></select><select id="op"></select><span id="lc"></span></div>
 <div class="h">Pick a type and orbit, then tap the map: the angle you tap sets where the orbit starts.</div>
 <canvas id="tl"></canvas>
 <div class="row"><button id="pl">▶ Dry run</button><input type="range" id="sc" min="0" max="1000" value="0"><button id="un">Undo</button><button id="cm">Commit</button></div>
 </div></div>
-<div id="CS" class="ov" hidden><div id="fd"><i>● LIVE · TRACKING SAT-3 · JARVIS ANALYSIS</i><div id="tel"></div><button id="sk">Skip ▸</button><button id="mu" style="right:84px">🔊</button><div id="cap"></div></div></div>
+<div id="CS" class="ov" hidden><div id="fd"><i>● LIVE · TRACKING SAT-3 · JARVIS ANALYSIS</i><div id="tel"></div><button id="sk">Skip ▸</button><button id="mu" style="right:84px">🔊</button><button id="sv" style="right:130px">⏹ Stop voice</button><div id="cap"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),cv=$('#c'),x=cv.getContext('2d'),tl=$('#tl'),tx=tl.getContext('2d');
@@ -175,10 +175,12 @@ cs={el:0,i:0,ph:0,gd:[],look:new T3.Vector3(),L:['Good day, Commander. I have a 
 while(gh.children.length)gh.remove(gh.children[0]);
 if(tr==0){m.rec.forEach(([op,a])=>{const it={ty:m.k,op,ang:a*A},c=DT[m.k].c,d=dot(c,.09);gh.add(orb3(it,c,.9),d);cs.gd.push({it,d})});cs.L.push('I have taken the liberty of marking a recommended layout on your display. Good luck, Commander.')}
 $('#G').hidden=true;$('#CS').hidden=false;cv.hidden=true;c3.hidden=false;cam3.position.set(0,12,14);csNext()}
-function csNext(){if(!cs)return;if(cs.i>=cs.L.length)return csEnd();const s=cs.L[cs.i++],me=cs,tts=voice&&window.speechSynthesis;me.ph=me.i;$('#cap').textContent=s;let done=false;
-const go=()=>{if(done||cs!==me)return;done=true;clearTimeout(me.to);me.to=setTimeout(csNext,450)};me.to=setTimeout(go,tts?s.length*140+3000:Math.max(3000,s.length*70));
+function csNext(){if(!cs)return;if(cs.i>=cs.L.length)return csEnd();const s=cs.L[cs.i++],me=cs,tts=voice&&!cs.silent&&window.speechSynthesis;me.ph=me.i;$('#cap').textContent=s;let done=false;
+const go=()=>{if(done||cs!==me)return;done=true;clearTimeout(me.to);me.to=setTimeout(csNext,450)};me.go=go;me.cur=s;me.to=setTimeout(go,tts?s.length*140+3000:Math.max(3000,s.length*70));
 if(tts){speechSynthesis.cancel();const u=ut(s);u.onend=go;speechSynthesis.speak(u)}}
 function csEnd(){if(cs)clearTimeout(cs.to);cs=null;window.speechSynthesis&&speechSynthesis.cancel();$('#CS').hidden=true;$('#G').hidden=false;setView(v3)}
+function stopVoice(){if(window.speechSynthesis)speechSynthesis.cancel();if(cs){cs.silent=true;clearTimeout(cs.to);cs.to=setTimeout(cs.go,Math.max(1500,cs.cur.length*55))}}
+$('#stv').onclick=$('#sv').onclick=stopVoice;addEventListener('keydown',e=>{if(e.key=='Escape')stopVoice()});addEventListener('pagehide',()=>window.speechSynthesis&&speechSynthesis.cancel());
 $('#sk').onclick=csEnd;$('#bf').onclick=csStart;$('#vw').onclick=()=>setView(!v3);
 $('#mu').onclick=()=>{voice=!voice;$('#vo').textContent=$('#mu').textContent=voice?'🔊':'🔇';if(!voice&&window.speechSynthesis)speechSynthesis.cancel()};
 const _bk=$('#bk').onclick,_gd=$('#gd').onclick;$('#bk').onclick=()=>{_bk();cv.hidden=true;c3.hidden=false;$('#st3').textContent=''};$('#gd').onclick=()=>{setView(v3);_gd()};
