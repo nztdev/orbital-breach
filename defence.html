@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Planetary Defence · Orbital Command</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;color-scheme:dark;--ac:#4cc9ff}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:#02030a;color:#cfe8ff;font:13px system-ui,sans-serif;overflow:hidden}
+#c3{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;inset:0;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);font-family:Orbitron,"Segoe UI",system-ui,sans-serif}
+button,select,.btn{background:#0c1a3a;color:#cfe3ff;border:1px solid #34507f;border-radius:6px;padding:5px 9px;font:inherit;font-size:12px;cursor:pointer;text-decoration:none;display:inline-block}
+button:disabled{opacity:.4;cursor:default}button.on,.chip.on{background:#1f55d8;border-color:#7aa2ff}
+#tb{position:absolute;top:8px;left:10px;right:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;pointer-events:auto;font-size:11px;letter-spacing:.08em}
+#stg{display:flex;gap:4px}#stg span{padding:3px 7px;border:1px solid #2a3b66;opacity:.45;font-size:10px}#stg span.on{opacity:1;border-color:var(--ac);color:#fff;background:rgba(76,201,255,.15)}
+.sp{flex:1}.h{opacity:.6;font-size:11px}.lb{font-size:10px;letter-spacing:.1em;opacity:.65;margin:8px 0 4px}
+.hp{position:absolute;pointer-events:auto;display:flex;flex-direction:column;transition:opacity .3s,transform .35s cubic-bezier(.16,1,.3,1)}
+.hp.off{opacity:0;pointer-events:none;transform:translateY(14px)}
+.hp .hd{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(8,16,34,.88);border:1px solid rgba(110,210,255,.3);border-left:3px solid var(--ac);font-size:11px;letter-spacing:.1em;cursor:pointer;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
+.hp .bd,.hp .cap{background:rgba(6,12,28,.84);border:1px solid rgba(110,210,255,.22);border-top:0;padding:10px}
+.hp.min .bd,.hp.min .feed,.hp.min .cap{display:none}
+.feed{aspect-ratio:16/10;position:relative;border:2px solid rgba(120,220,255,.5);box-shadow:inset 0 0 60px rgba(0,0,0,.55);background:repeating-linear-gradient(0deg,rgba(0,0,0,.15) 0 1px,transparent 1px 3px)}
+.feed i{position:absolute;top:6px;left:8px;font:11px monospace;color:#7df;font-style:normal}#tel{position:absolute;left:8px;bottom:6px;font:11px monospace;color:#7df}
+.cap{font:13px/1.45 system-ui,sans-serif;min-height:3.2em}
+#pJ{left:10px;top:48px;width:min(360px,calc(100% - 20px))}#pR{right:10px;top:48px;width:210px}
+#pB{left:10px;bottom:10px;width:min(380px,calc(100% - 20px))}#pT{right:10px;bottom:10px;width:min(470px,calc(100% - 20px))}
+#pD{left:0;right:0;margin:0 auto;top:30%;width:min(420px,calc(100% - 20px))}
+@media(max-width:820px){#pJ,#pB,#pT{left:8px;right:8px;width:auto}#pR{width:140px}#pD{top:22%}}
+.chips{display:flex;gap:5px;flex-wrap:wrap}.chip{background:#0c1a3a;border:1px solid #34507f;border-radius:6px;padding:5px 9px;font:12px system-ui,sans-serif;cursor:pointer;color:#cfe3ff}
+.chip small{display:block;opacity:.6;font-size:10px}.row{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+canvas#rd{width:100%;aspect-ratio:1;display:block}canvas#tl{width:100%;height:84px;display:block;background:#050a18;border-radius:6px}
+#sub{position:absolute;left:50%;top:44%;transform:translateX(-50%);max-width:min(560px,90%);text-align:center;font:14px/1.45 system-ui,sans-serif;padding:8px 14px;background:rgba(5,12,28,.8);border-left:3px solid var(--ac);opacity:0;transition:opacity .4s;pointer-events:none}#sub.on{opacity:1}
+#pD h2{margin:4px 0;font-size:20px;letter-spacing:.14em}#pD p{font:13px/1.45 system-ui,sans-serif}
+</style></head><body>
+<canvas id="c3"></canvas>
+<div id="hud">
+<div id="tb"><a class="btn" href="./index.html">☰ MENU</a><span id="lvs" class="row" style="margin:0"></span><span id="stg"><span data-s="alert">ALERT</span><span data-s="analysis">ANALYSIS</span><span data-s="plan">PLANNING</span><span data-s="run">RUN</span><span data-s="debrief">DEBRIEF</span></span><span class="sp"></span>
+<select id="tier" title="Jarvis detail"><option>Guided</option><option>Advisor</option><option>Analyst</option></select><label><input type="checkbox" id="ck"> clock</label><b id="clk"></b></div>
+<div id="sub"></div>
+<div class="hp off min" id="pJ"><div class="hd"><b>◉ JARVIS</b><span class="sp"></span><button id="jsk">Skip ▸</button><button id="jsv">⏹ Voice</button><button id="jmu">🔊</button><button id="jrp" hidden>↻</button></div><div class="feed" id="feed"><i>● LIVE · TRACKING SAT-3</i><div id="tel"></div></div><div class="cap" id="cap"></div></div>
+<div class="hp off" id="pR"><div class="hd"><b>◎ RADAR</b></div><div class="bd" style="padding:4px"><canvas id="rd" width="260" height="260"></canvas></div></div>
+<div class="hp off" id="pB"><div class="hd"><b>🛰 DEPLOY</b><span class="sp"></span><span id="lc"></span></div><div class="bd">
+<div class="lb">DEFENDER</div><div class="chips" id="tys"></div><div class="lb">ORBIT</div><div class="chips" id="ops"></div>
+<div class="lb">START ANGLE <b id="agv">0°</b></div><input type="range" id="ag" min="0" max="359" value="0" style="width:100%">
+<div class="row"><button id="dp">Deploy</button><button id="un">Undo</button><span class="h" id="bh"></span></div></div></div>
+<div class="hp off" id="pT"><div class="hd"><b>⏱ SIMULATION</b></div><div class="bd"><canvas id="tl"></canvas><div class="row"><button id="pl">▶ Dry run</button><input type="range" id="sc" min="0" max="1000" value="0" style="flex:1;min-width:80px"><button id="cm">Commit</button></div></div></div>
+<div class="hp off" id="pD"><div class="hd"><b>DEBRIEF</b></div><div class="bd" style="text-align:center"><h2 id="dt"></h2><div id="ds" style="font-size:20px;color:#ffd24a"></div><p id="dx"></p><div class="row" style="justify-content:center"><button id="dr">↻ Retry</button><button id="dn">Next level ▸</button><a class="btn" href="./index.html">Menu</a></div></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="./js/sim.js"></script>
+<script src="./js/globe.js"></script>
+<script>
+const $=s=>document.querySelector(s),V=(x,y,z)=>new T3.Vector3(x,y,z),LIM=4,narrow=()=>innerWidth<820;
+let P={stars:[0,0,0],clk:false,tier:0,voice:true};try{Object.assign(P,JSON.parse(localStorage.getItem('od2')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('od2',JSON.stringify(P))}catch(e){}};
+let LI=0,plan=[],res,pt=0,playing=false,commitRun=false,stage='',sel={ty:0,op:1},ang=0,clk=90,armed=false,cs=null,dirty=true,yw=.6,drag=null,subT,msg='';
+const lv=()=>LV[LI];
+// ---------- 3D scene ----------
+const cv=$('#c3'),r3=new T3.WebGLRenderer({canvas:cv,antialias:true}),s3=new T3.Scene(),cam=new T3.PerspectiveCamera(45,1,.1,500),fcam=new T3.PerspectiveCamera(40,1.6,.05,500),fcp=V(0,12,14),flk=V();
+r3.setPixelRatio(Math.min(devicePixelRatio,2));r3.outputEncoding=T3.sRGBEncoding;
+function rs(){r3.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',rs);rs();
+s3.add(new T3.AmbientLight(0x445577,.3));const sl=new T3.DirectionalLight(0xfff0dd,1.8);sl.position.set(10,3,2);s3.add(sl);
+const EARTH=createEarth(s3,m=>{msg=m=='real'?'':'OFFLINE IMAGERY'});
+{const p=new Float32Array(2400);for(let i=0;i<800;i++){const u=Math.sin(i*91.7),a=i*2.399,s=Math.sqrt(1-u*u);p.set([200*s*Math.cos(a),200*u,200*s*Math.sin(a)],i*3)}s3.add(new T3.Points(new T3.BufferGeometry().setAttribute('position',new T3.BufferAttribute(p,3)),new T3.PointsMaterial({size:1.2,sizeAttenuation:false,color:0xccddff})))}
+const g3=new T3.Group(),gh=new T3.Group(),pv=new T3.Group();s3.add(g3,gh,pv);let sh3=[];
+const ast=new T3.Mesh(new T3.IcosahedronGeometry(.24,1),new T3.MeshStandardMaterial({color:0xb9a58f,roughness:1,flatShading:true})),
+swp=new T3.Points(new T3.BufferGeometry().setAttribute('position',new T3.BufferAttribute(new Float32Array(44*3),3)),new T3.PointsMaterial({color:0xaab0c0,size:.09})),
+stm=new T3.Mesh(new T3.SphereGeometry(1.6,24,16),new T3.MeshBasicMaterial({color:0xffc040,transparent:true,opacity:.35,blending:T3.AdditiveBlending,depthWrite:false}));
+swp.frustumCulled=false;s3.add(ast,swp,stm);
+const mrk=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.strokeStyle='#ff5a4a';x.lineWidth=6;x.beginPath();x.arc(64,64,52,0,7);x.stroke();x.beginPath();x.moveTo(64,2);x.lineTo(64,24);x.moveTo(64,104);x.lineTo(64,126);x.moveTo(2,64);x.lineTo(24,64);x.moveTo(104,64);x.lineTo(126,64);x.stroke();return new T3.Sprite(new T3.SpriteMaterial({map:new T3.CanvasTexture(c),transparent:true,depthTest:false}))})();s3.add(mrk);
+const swm=Array.from({length:44},(_,i)=>[Math.cos(i*2.399)*Math.sqrt(i/44)*.95,Math.sin(i*2.399)*Math.sqrt(i/44)*.95]);
+const orb3=(it,col,op)=>new T3.Line(new T3.BufferGeometry().setFromPoints(orbitPts(it).map(p=>V(p[0],0,-p[1]))),new T3.LineBasicMaterial({color:col,transparent:true,opacity:op}));
+const dot=(c,r)=>new T3.Mesh(new T3.SphereGeometry(r,12,8),new T3.MeshBasicMaterial({color:c}));
+const clr=g=>{while(g.children.length)g.remove(g.children[0])};
+function rebuild(){dirty=false;clr(g3);sh3=[];plan.forEach(it=>{const c=DT[it.ty].c,d=dot(c,.07),rg=new T3.Mesh(new T3.SphereGeometry(DT[it.ty].rg,24,16),new T3.MeshBasicMaterial({color:c,transparent:true,opacity:.12,depthWrite:false})),bm=new T3.Line(new T3.BufferGeometry().setFromPoints([V(),V()]),new T3.LineBasicMaterial({color:c}));bm.frustumCulled=false;g3.add(orb3(it,c,.55),d,rg,bm);sh3.push({d,rg,bm})})}
+function preview(){clr(pv);if(stage!='plan'||plan.length>=LIM)return;const it={ty:sel.ty,op:sel.op,ang:ang*A},c=DT[sel.ty].c,d=dot(0xffffff,.09),p=posAt(it,0);d.position.set(p[0],0,-p[1]);pv.add(orb3(it,0xffffff,.9),d)}
+function buildGhost(){clr(gh);gh.userData.gd=[];if(P.tier==0)lv().rec.forEach(([op,a])=>{const it={ty:lv().k,op,ang:a*A},c=DT[lv().k].c,d=dot(c,.09);gh.add(orb3(it,c,.7),d);gh.userData.gd.push({it,d})})}
+// ---------- voice ----------
+function ut(s){const u=new SpeechSynthesisUtterance(s),v=speechSynthesis.getVoices(),b=v.find(x=>/en[-_]GB/i.test(x.lang)&&/male|daniel|arthur|oliver|george/i.test(x.name))||v.find(x=>/en[-_]GB/i.test(x.lang));if(b)u.voice=b;u.rate=.95;u.pitch=.85;return u}
+function say(s,quiet){const e=$('#sub');e.textContent=s;e.classList.add('on');clearTimeout(subT);subT=setTimeout(()=>e.classList.remove('on'),Math.max(5000,s.length*85));if(P.voice&&!quiet&&window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak(ut(s))}}
+function stopVoice(){if(window.speechSynthesis)speechSynthesis.cancel();if(cs){cs.silent=true;clearTimeout(cs.to);cs.to=setTimeout(cs.go,Math.max(1500,cs.cur.length*55))}}
+addEventListener('keydown',e=>{if(e.key=='Escape')stopVoice()});addEventListener('pagehide',()=>window.speechSynthesis&&speechSynthesis.cancel());
+// ---------- panels and stages ----------
+const PN=['pJ','pB','pT','pR'];
+function show(id,min){const e=$('#'+id);e.classList.remove('off');e.classList.toggle('min',!!min);if(!min&&narrow()&&(id=='pB'||id=='pT'))['pB','pT'].filter(x=>x!=id).forEach(x=>$('#'+x).classList.add('min'))}
+const hide=id=>$('#'+id).classList.add('off');
+document.querySelectorAll('.hd').forEach(h=>h.addEventListener('click',e=>{if(e.target.closest('button,select'))return;const p=h.parentElement;if(p.classList.contains('min'))show(p.id,false);else p.classList.add('min')}));
+function setStage(s){stage=s;document.querySelectorAll('#stg span').forEach(x=>x.classList.toggle('on',x.dataset.s==s));
+if(s=='alert'){PN.forEach(hide);hide('pD');say('Alert. An unidentified contact has been detected, Commander.',true)}
+if(s=='analysis'){show('pJ',false);hide('pB');hide('pT');hide('pR')}
+if(s=='plan'){show('pJ',true);show('pB',false);show('pR',narrow());plan.length?show('pT',narrow()):hide('pT');armed=true;clk=90}
+if(s=='run'){hide('pB');show('pT',false);show('pR',false);show('pJ',true);armed=false}
+if(s=='debrief'){hide('pB');show('pD',false)}preview()}
+// ---------- analysis cutscene ----------
+function startAnalysis(){const m=lv();setStage('analysis');
+cs={el:0,i:0,ph:0,silent:false,L:['Good day, Commander. I have a live feed of the incoming threat: the '+m.n+'.','It approaches from bearing '+m.bear.replace('°',' degrees')+', with impact expected in '+m.eta+' seconds.',m.cls,m.h[P.tier].replace('{E}',m.eta)]};
+if(P.tier==0)cs.L.push('I have taken the liberty of marking a recommended layout on your display. Good luck, Commander.');fcp.set(0,12,14);flk.set(0,0,0);$('#jrp').hidden=true;csNext()}
+function csNext(){if(!cs)return;if(cs.i>=cs.L.length)return csEnd();const s=cs.L[cs.i++],me=cs,tts=P.voice&&!me.silent&&window.speechSynthesis;me.ph=me.i;$('#cap').textContent=s;let done=false;
+const go=()=>{if(done||cs!==me)return;done=true;clearTimeout(me.to);me.to=setTimeout(csNext,450)};me.go=go;me.cur=s;me.to=setTimeout(go,tts?s.length*140+3000:Math.max(3000,s.length*70));
+if(tts){speechSynthesis.cancel();const u=ut(s);u.onend=go;speechSynthesis.speak(u)}}
+function csEnd(){if(cs)clearTimeout(cs.to);cs=null;window.speechSynthesis&&speechSynthesis.cancel();$('#jrp').hidden=false;setStage('plan')}
+// ---------- levels ----------
+function recalc(){res=sim(lv(),plan);pt=Math.min(pt,res.end);dirty=true;$('#lc').textContent=plan.length+'/'+LIM+' launched';$('#dp').disabled=plan.length>=LIM;$('#pl').disabled=$('#cm').disabled=!plan.length}
+function chips(){const m=lv();$('#tys').innerHTML='';m.types.forEach(t=>{const b=document.createElement('button');b.className='chip'+(sel.ty==t?' on':'');b.innerHTML=DT[t].n+'<small>'+['vs asteroids','vs debris','vs storms'][t]+'</small>';b.onclick=()=>{sel.ty=t;chips();preview()};$('#tys').append(b)});
+$('#ops').innerHTML='';OP.forEach((o,i)=>{const b=document.createElement('button');b.className='chip'+(sel.op==i?' on':'');b.innerHTML=o[0]+'<small>'+o[4]+'</small>';b.onclick=()=>{sel.op=i;chips();preview()};$('#ops').append(b)})}
+function lvChips(){$('#lvs').innerHTML='';LV.forEach((m,i)=>{const b=document.createElement('button'),open=i==0||P.stars[i-1]>0;b.textContent='L'+(i+1)+(P.stars[i]?' '+'★'.repeat(P.stars[i]):'')+(open?'':' 🔒');b.disabled=!open;b.className=i==LI?'on':'';b.onclick=()=>enterLevel(i);$('#lvs').append(b)})}
+function enterLevel(i){LI=i;plan=[];ang=0;$('#ag').value=0;$('#agv').textContent='0°';sel={ty:lv().types[0],op:1};pt=0;playing=false;cs=null;window.speechSynthesis&&speechSynthesis.cancel();recalc();chips();buildGhost();lvChips();$('#bh').textContent='';setStage('alert');const id=i;setTimeout(()=>{if(stage=='alert'&&LI==id)startAnalysis()},2200)}
+function report(commit){const m=lv(),l=res.st[res.st.length-1],cov=res.st.reduce((s,q)=>s+q.inr.filter(Boolean).length*.1,0),need=m.hp/Math.max(...DT.map(d=>d.d[m.k]));
+let s=(res.win?(commit?'Splendid work, Commander. ':'Dry run complete. ')+'The threat was neutralised at '+l.t.toFixed(0)+' seconds.':(commit?'Regrettably, Commander, ':'Dry run complete. ')+'we would suffer impact at '+res.hit.toFixed(0)+' seconds, with '+Math.round(l.hp/m.hp*100)+' percent of the threat intact.')+' Coverage totalled '+cov.toFixed(1)+' seconds, against roughly '+need.toFixed(0)+' required.';
+if(!res.win)s+=cov==0?' Nothing engaged at all, which suggests the defender type may not suit this threat.':' Might I suggest adding coverage where it closes on Earth, or adjusting your start angles?';return s}
+function run(commit){if(!plan.length){say('Forgive me, Commander, but no defenders have been deployed.');return}pt=0;playing=true;commitRun=commit;if(commit)setStage('run')}
+function finish(){const txt=report(commitRun);say(txt);if(!commitRun)return;let st=0;if(res.win){st=plan.length<=3?3:2;P.stars[LI]=Math.max(P.stars[LI],st);save();lvChips()}
+setStage('debrief');$('#dt').textContent=res.win?'EARTH SAFE':'IMPACT';$('#ds').textContent=res.win?'★'.repeat(st)+'☆'.repeat(3-st):'';$('#dx').textContent=res.win?(LI<2?'The next level has been unlocked.':'Training complete. Conquest Campaign awaits.'):'The threat reached Earth. Adjust your defences and try again.';$('#dn').hidden=!(res.win&&LI<2)}
+// ---------- UI wiring ----------
+$('#ag').oninput=e=>{ang=+e.target.value;$('#agv').textContent=ang+'°';preview()};
+$('#dp').onclick=()=>{plan.push({ty:sel.ty,op:sel.op,ang:ang*A});recalc();preview();$('#bh').textContent='';if(plan.length==1)show('pT',narrow());else if(!narrow())show('pT',false)};
+$('#un').onclick=()=>{plan.pop();playing=false;recalc();preview();if(!plan.length)hide('pT')};
+$('#pl').onclick=()=>run(false);$('#cm').onclick=()=>run(true);$('#sc').oninput=e=>{playing=false;pt=e.target.value/1000*res.end};
+$('#dr').onclick=()=>enterLevel(LI);$('#dn').onclick=()=>enterLevel(LI+1);
+$('#jsk').onclick=()=>{if(cs)csEnd()};$('#jsv').onclick=stopVoice;$('#jrp').onclick=()=>{if(stage=='plan')startAnalysis()};
+$('#jmu').onclick=()=>{P.voice=!P.voice;$('#jmu').textContent=P.voice?'🔊':'🔇';save();if(!P.voice&&window.speechSynthesis)speechSynthesis.cancel()};
+$('#tier').onchange=e=>{P.tier=e.target.selectedIndex;save();buildGhost()};$('#ck').onchange=e=>{P.clk=e.target.checked;save();clk=90};
+$('#tier').selectedIndex=P.tier;$('#ck').checked=!!P.clk;$('#jmu').textContent=P.voice?'🔊':'🔇';
+cv.addEventListener('pointerdown',e=>{drag=[e.clientX,yw]});addEventListener('pointermove',e=>{if(drag&&e.buttons)yw=drag[1]-(e.clientX-drag[0])*.008});addEventListener('pointerup',()=>drag=null);
+// ---------- radar and timeline ----------
+const rc=$('#rd'),rx=rc.getContext('2d'),tl=$('#tl'),tx=tl.getContext('2d');
+function radar(q){const w=rc.width,S=w/2/9.4,cx=w/2,X=v=>cx+v*S,Y=v=>cx-v*S;rx.clearRect(0,0,w,w);rx.fillStyle='rgba(4,14,30,.9)';rx.fillRect(0,0,w,w);rx.strokeStyle='rgba(76,201,255,.18)';for(let r=2;r<=8;r+=2){rx.beginPath();rx.arc(cx,cx,r*S,0,7);rx.stroke()}
+plan.forEach(it=>{rx.strokeStyle=DT[it.ty].c+'66';rx.beginPath();orbitPts(it).forEach((p,i)=>i?rx.lineTo(X(p[0]),Y(p[1])):rx.moveTo(X(p[0]),Y(p[1])));rx.stroke()});
+rx.fillStyle='#2a7fd0';rx.beginPath();rx.arc(cx,cx,S,0,7);rx.fill();
+plan.forEach((it,i)=>{const p=q.sh[i];if(!p)return;rx.fillStyle=DT[it.ty].c;if(q.inr[i]){rx.globalAlpha=.25;rx.beginPath();rx.arc(X(p[0]),Y(p[1]),DT[it.ty].rg*S,0,7);rx.fill();rx.globalAlpha=1}rx.beginPath();rx.arc(X(p[0]),Y(p[1]),4,0,7);rx.fill()});
+rx.fillStyle='#ff5a4a';rx.beginPath();rx.arc(X(q.tp[0]),Y(q.tp[1]),5,0,7);rx.fill();rx.strokeStyle='rgba(255,90,74,.4)';rx.setLineDash([4,5]);rx.beginPath();rx.moveTo(X(q.tp[0]),Y(q.tp[1]));rx.lineTo(X(lv().p[0]),Y(lv().p[1]));rx.stroke();rx.setLineDash([])}
+function tline(){const m=lv(),dp=Math.min(devicePixelRatio||1,2),w=tl.clientWidth;if(!w)return;if(tl.width!=w*dp){tl.width=w*dp;tl.height=84*dp;tx.setTransform(dp,0,0,dp,0,0)}const h=84,E=res.end||1,X=t=>t/E*w;tx.clearRect(0,0,w,h);
+tx.fillStyle='rgba(255,255,255,.12)';tx.beginPath();tx.moveTo(0,h);res.st.forEach(q=>tx.lineTo(X(q.t),h-q.hp/m.hp*h));tx.lineTo(X(E),h);tx.fill();
+plan.forEach((it,i)=>{tx.fillStyle=DT[it.ty].c;res.st.forEach(q=>{if(q.inr[i])tx.fillRect(X(q.t),6+i*12,Math.max(1,w/res.st.length+.5),8)})});tx.fillStyle='#f55';tx.fillRect(X(pt),0,2,h)}
+// ---------- main loop ----------
+function thr(m,tp,t,on){ast.visible=on&&m.k==0;swp.visible=on&&m.k==1;stm.visible=on&&m.k==2;mrk.visible=on;const X=tp[0],Z=-tp[1];ast.position.set(X,0,Z);ast.rotation.x+=.02;stm.position.set(X,0,Z);stm.scale.setScalar(1+.05*Math.sin(t*6));mrk.position.set(X,0,Z);mrk.scale.setScalar(.7+.08*Math.sin(t*5)+(m.k==2?1.4:m.k==1?.8:0));
+const a=swp.geometry.attributes.position;swm.forEach((o,i)=>a.setXYZ(i,X+o[0],Math.sin(i*7)*.3,Z-o[1]));a.needsUpdate=true}
+function feed(tp,fin,dt){const p=$('#pJ');if(p.classList.contains('off')||p.classList.contains('min'))return;const b=$('#feed').getBoundingClientRect();if(b.width<20)return;const m=lv(),d=Math.hypot(...m.v),ux=m.v[0]/d,uy=m.v[1]/d,k=1-Math.exp(-dt*1.6);
+fcp.lerp(fin?V(0,9,11):V(tp[0]-uy*3-ux*1.5,1.6,-(tp[1]+ux*3-uy*1.5)),k);flk.lerp(fin?V():V(tp[0],0,-tp[1]),k);fcam.position.copy(fcp);fcam.lookAt(flk);fcam.aspect=b.width/b.height;fcam.updateProjectionMatrix();
+const y=innerHeight-b.bottom;r3.setScissorTest(true);r3.setViewport(b.left,y,b.width,b.height);r3.setScissor(b.left,y,b.width,b.height);r3.render(s3,fcam);r3.setScissorTest(false);r3.setViewport(0,0,innerWidth,innerHeight)}
+let lt=performance.now();
+function frame(ms){requestAnimationFrame(frame);const dt=Math.min((ms-lt)/1000,.1),t=ms/1000;lt=ms;const m=lv();EARTH.tick(dt);
+if(playing){pt+=dt;if(pt>=res.end){pt=res.end;playing=false;finish()}$('#sc').value=pt/res.end*1000}
+if(P.clk&&armed&&stage=='plan'){clk-=dt;if(clk<=0){clk=0;if(plan.length)run(true);else clk=90}}$('#clk').textContent=P.clk&&armed&&stage=='plan'?Math.floor(clk/60)+':'+String(Math.floor(clk%60)).padStart(2,'0'):'';
+let q,fin=false;if(cs){cs.el+=dt;const ts=Math.min(m.eta*.8,cs.el*1.5);q={tp:[m.p[0]+m.v[0]*ts,m.p[1]+m.v[1]*ts],sh:[],inr:[],hp:m.hp,t:ts};fin=cs.ph>=4}else q=res.st[Math.min(res.st.length-1,Math.round(pt/.1))];
+const gone=!cs&&res.win&&q===res.st[res.st.length-1];thr(m,q.tp,t,!gone);if(dirty)rebuild();
+$('#tel').textContent='RNG '+Math.hypot(...q.tp).toFixed(1)+' · SPD '+Math.hypot(...m.v).toFixed(2)+' · T-'+Math.max(0,m.eta-q.t).toFixed(0)+'s';
+sh3.forEach((s,i)=>{const p=q.sh[i];if(!p)return;s.d.position.set(p[0],0,-p[1]);s.rg.position.copy(s.d.position);s.rg.visible=s.bm.visible=q.inr[i];if(q.inr[i]){const a=s.bm.geometry.attributes.position;a.setXYZ(0,p[0],0,-p[1]);a.setXYZ(1,q.tp[0],0,-q.tp[1]);a.needsUpdate=true}});
+gh.visible=P.tier==0&&(stage=='plan'||fin);gh.userData.gd.forEach(o=>{const p=posAt(o.it,t);o.d.position.set(p[0],0,-p[1])});pv.visible=stage=='plan';
+if(!drag&&!playing)yw+=dt*.03;const R=narrow()?17:13,el=.62;cam.position.set(Math.sin(yw)*R*Math.cos(el),R*Math.sin(el),Math.cos(yw)*R*Math.cos(el));cam.lookAt(0,0,0);
+r3.render(s3,cam);feed(q.tp,fin,dt);if(!$('#pR').classList.contains('off'))radar(q);if(!$('#pT').classList.contains('off'))tline()}
+lvChips();const first=P.stars.findIndex(s=>!s);enterLevel(first<0?0:first);requestAnimationFrame(frame);
+</script></body></html>
