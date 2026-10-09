@@ -30,7 +30,7 @@ button:disabled{opacity:.4;cursor:default}
 .hcard.on{border:2px solid #7ae0ff;box-shadow:0 0 14px rgba(76,201,255,.7)}
 .hcard span{position:absolute;left:0;right:0;bottom:0;padding:9px 3px 2px;text-align:center;font:600 10px system-ui,sans-serif;background:linear-gradient(transparent,rgba(0,8,20,.92))}.hcard small{display:block;font-weight:400;opacity:.65;font-size:9px}
 .bar{background:rgba(6,12,28,.86);border:1px solid rgba(110,210,255,.22);border-top:0;padding:6px 10px;display:flex;gap:6px;align-items:center}
-.tlr{display:none;flex-direction:column;align-items:stretch}#pB.has .tlr{display:flex}#pB.running .strip,#pB.running .sl{display:none}
+.tlr{display:none;flex-direction:column;align-items:stretch}#pB.has .tlr{display:flex}#pB.running .strip,#pB.running .sl,#pB.running .lgb{display:none}.lgb{border-top:1px solid rgba(110,210,255,.22);padding:3px 10px}
 canvas#tl{width:100%;height:46px;display:block;background:#050a18;border-radius:4px}
 #pD{left:0;right:0;margin:0 auto;top:26%;width:min(420px,calc(100% - 20px))}#pD h2{margin:4px 0;font-size:20px;letter-spacing:.14em}#pD p{font:13px/1.45 system-ui,sans-serif}.row{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
 #sub{position:absolute;left:50%;top:42%;transform:translateX(-50%);max-width:min(560px,86%);text-align:center;font:14px/1.45 system-ui,sans-serif;padding:8px 14px;background:rgba(5,12,28,.8);border-left:3px solid var(--ac);opacity:0;transition:opacity .4s;pointer-events:none}#sub.on{opacity:1}
@@ -57,7 +57,7 @@ canvas#tl{width:100%;height:46px;display:block;background:#050a18;border-radius:
 <div class="hp off min" id="pJ"><div class="hd"><b>◉ JARVIS</b><canvas id="wv" width="160" height="48"></canvas><span class="sp"></span><button id="jsk">Skip ▸</button><button id="jsv" title="Stop voice">⏹</button><button id="jmu" title="Mute">🔊</button><button id="jrp" title="Replay briefing" hidden>↻</button></div><div class="feed" id="feed"><i>● LIVE · TRACKING SAT-3</i><div id="tel"></div></div><div class="cap" id="cap"></div></div>
 <div class="hp off min" id="pR"><div class="hd"><b>◎ RADAR</b></div><div class="bd"><canvas id="rd" width="300" height="300"></canvas></div></div>
 <div class="hp off" id="pB"><div class="hd"><b>🛰 DEPLOY</b><span class="sp"></span><span id="lc"></span></div><div class="bd t">
-<div class="strip" id="ds"></div><div class="strip" id="os" style="margin-top:4px"></div>
+<div class="bar lgb"><span class="h"><b style="color:#66ccff">●</b> numbered = active defender &nbsp; ┄ dashed = guide only</span></div><div class="strip" id="ds"></div><div class="strip" id="os" style="margin-top:4px"></div>
 <div class="bar sl"><span class="h">START ANGLE <b id="agv">0°</b></span><input type="range" id="ag" min="0" max="359" value="0" style="flex:1"></div>
 <div class="bar tlr"><canvas id="tl"></canvas><input type="range" id="sc" min="0" max="1000" value="0" style="width:100%"></div>
 <div class="bar"><button id="dp">Deploy</button><button id="un">Undo</button><span class="sp"></span><button id="pl">▶ Test</button><button id="cm">Commit</button></div></div></div>
@@ -110,10 +110,12 @@ function tone(f0,f1,dur,type='sine',vol=.05,delay=0){if(!P.voice||!AC)return;try
 function noise(dur,f0,f1,vol,delay=0){if(!P.voice||!AC)return;try{const n=Math.floor(AC.sampleRate*dur),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain(),t=AC.currentTime+delay;s.buffer=b;f.type='lowpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.value=vol;s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t)}catch(e){}}
 const sfxZap=()=>tone(1400,260,.16,'sawtooth',.025),sfxBoom=()=>{noise(1,1800,60,.35);tone(110,32,.7,'sine',.2)},sfxImpact=()=>{noise(2.2,1200,40,.55);tone(70,24,1.4,'sine',.35);tone(180,50,.3,'square',.06)},
 sfxWin=()=>[523,659,784,1047].forEach((f,i)=>tone(f,f,.4,'triangle',.06,i*.14+.1)),sfxLose=()=>[330,262,196].forEach((f,i)=>tone(f,f*.97,.55,'sawtooth',.04,i*.28+.2));
-function rebuild(){dirty=false;clr(g3);sh3=[];plan.forEach(it=>{const c=DT[it.ty].c,d=dot(c,.07),rg=new T3.Mesh(new T3.SphereGeometry(DT[it.ty].rg,24,16),new T3.MeshBasicMaterial({color:c,transparent:true,opacity:.12,depthWrite:false})),
-bm=new T3.Mesh(new T3.CylinderGeometry(.022,.022,1,6),new T3.MeshBasicMaterial({color:c,transparent:true,opacity:.9,blending:T3.AdditiveBlending,depthWrite:false})),mz=spr(GT,c,.3,.9);bm.frustumCulled=false;bm.visible=mz.visible=false;g3.add(orb3(it,c,.55),d,rg,bm,mz);sh3.push({d,rg,bm,mz,col:new T3.Color(c)})})}
-function preview(){clr(pv);if(stage!='plan'||plan.length>=LIM)return;const it={ty:sel.ty,op:sel.op,ang:ang*A},d=dot(0xffffff,.09),p=posAt(it,0);d.position.set(p[0],0,-p[1]);pv.add(orb3(it,0xffffff,.9),d)}
-function buildGhost(){clr(gh);gh.userData.gd=[];if(P.tier==0)lv().rec.forEach(([op,a])=>{const it={ty:lv().k,op,ang:a*A},c=DT[lv().k].c,d=dot(c,.09);gh.add(orb3(it,c,.7),d);gh.userData.gd.push({it,d})})}
+const orbD=(it,col,op)=>{const l=new T3.Line(new T3.BufferGeometry().setFromPoints(orbitPts(it).map(p=>V(p[0],0,-p[1]))),new T3.LineDashedMaterial({color:col,dashSize:.12,gapSize:.1,transparent:true,opacity:op}));l.computeLineDistances();return l};
+const numTex=(n,c)=>{const k=document.createElement('canvas');k.width=k.height=64;const x=k.getContext('2d');x.fillStyle='rgba(0,0,0,.6)';x.beginPath();x.arc(32,32,27,0,7);x.fill();x.strokeStyle=c;x.lineWidth=3;x.stroke();x.font='bold 34px Orbitron,system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle=c;x.fillText(n,32,35);return new T3.CanvasTexture(k)};
+function rebuild(){dirty=false;clr(g3);sh3=[];plan.forEach((it,i)=>{const c=DT[it.ty].c,d=dot(c,.085),rg=new T3.Mesh(new T3.SphereGeometry(DT[it.ty].rg,24,16),new T3.MeshBasicMaterial({color:c,transparent:true,opacity:.12,depthWrite:false})),
+bm=new T3.Mesh(new T3.CylinderGeometry(.022,.022,1,6),new T3.MeshBasicMaterial({color:c,transparent:true,opacity:.9,blending:T3.AdditiveBlending,depthWrite:false})),mz=spr(GT,c,.3,.9),hl=spr(GT,c,.5,.55),lb=new T3.Sprite(new T3.SpriteMaterial({map:numTex(i+1,c),transparent:true}));lb.scale.setScalar(.4);bm.frustumCulled=false;bm.visible=mz.visible=false;g3.add(orb3(it,c,.85),d,rg,bm,mz,hl,lb);sh3.push({d,rg,bm,mz,hl,lb,col:new T3.Color(c)})})}
+function preview(){clr(pv);if(stage!='plan'||plan.length>=LIM)return;const it={ty:sel.ty,op:sel.op,ang:ang*A},m=spr(RT,0xffffff,.34,.95),p=posAt(it,0);m.position.set(p[0],0,-p[1]);pv.add(orbD(it,0xffffff,.9),m)}
+function buildGhost(){clr(gh);if(P.tier==0)lv().rec.forEach(([op,a])=>{const it={ty:lv().k,op,ang:a*A},c=DT[lv().k].c,m=spr(RT,c,.3,.8),p=posAt(it,0);m.position.set(p[0],0,-p[1]);gh.add(orbD(it,c,.75),m)})}
 // ---------- holographic previews (rendered into the deploy cards) ----------
 const hsc=new T3.Scene(),hcam=new T3.PerspectiveCamera(32,1.2,.1,50),HOLO=[],HORB=[];hcam.position.set(0,2.1,3.3);hcam.lookAt(0,.05,0);
 const hm=c=>new T3.LineBasicMaterial({color:c,transparent:true,opacity:.9,blending:T3.AdditiveBlending,depthWrite:false});
@@ -217,11 +219,11 @@ const cl=P.clk&&armed&&stage=='plan';if(cl){clk-=dt;if(clk<=0){clk=0;if(plan.len
 let q,fin=false;if(cs){cs.el+=dt;const ts=Math.min(m.eta*.8,cs.el*1.5);q={tp:[m.p[0]+m.v[0]*ts,m.p[1]+m.v[1]*ts],sh:[],inr:[],hp:m.hp,t:ts};fin=cs.ph>=4}else q=res.st[Math.min(res.st.length-1,Math.round(pt/.1))];
 const gone=!cs&&q===res.st[res.st.length-1];thr(m,q.tp,t,!gone&&stage!='gate');if(dirty)rebuild();
 $('#tel').textContent='RNG '+Math.hypot(...q.tp).toFixed(1)+' · SPD '+Math.hypot(...m.v).toFixed(2)+' · T-'+Math.max(0,m.eta-q.t).toFixed(0)+'s';
-sh3.forEach((s,i)=>{const p=q.sh[i];if(!p)return;const on=q.inr[i]&&!gone;s.d.position.set(p[0],0,-p[1]);s.rg.position.copy(s.d.position);s.rg.visible=s.bm.visible=s.mz.visible=on;
+sh3.forEach((s,i)=>{const p=q.sh[i];if(!p)return;const on=q.inr[i]&&!gone;s.d.position.set(p[0],0,-p[1]);s.rg.position.copy(s.d.position);s.hl.position.copy(s.d.position);s.hl.scale.setScalar(.45+.08*Math.sin(t*4+i));s.lb.position.set(p[0],.3,-p[1]);s.rg.visible=s.bm.visible=s.mz.visible=on;
 if(on){const ax=p[0],az=-p[1],bx=q.tp[0],bz=-q.tp[1],dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz)||.01;s.bm.position.set((ax+bx)/2,0,(az+bz)/2);s.bm.scale.set(.6+Math.random()*.9,L,.6+Math.random()*.9);s.bm.quaternion.setFromUnitVectors(UY,V(dx/L,0,dz/L));s.mz.position.set(ax,0,az);s.mz.scale.setScalar(.28+.18*Math.random());
 if(playing)emit(bx,0,bz,(Math.random()-.5)*2.2,(Math.random()-.5)*1.5,(Math.random()-.5)*2.2,.45,s.col.r,s.col.g,s.col.b)}});
 if(playing){q.inr.forEach((b,i)=>{if(b&&!prevInr[i])sfxZap()});prevInr=q.inr.slice()}
-gh.visible=P.tier==0&&(stage=='plan'||fin);gh.userData.gd.forEach(o=>{const p=posAt(o.it,t);o.d.position.set(p[0],0,-p[1])});pv.visible=stage=='plan';
+const guides=!playing&&pt<.05;gh.visible=P.tier==0&&((stage=='plan'&&guides)||fin);pv.visible=stage=='plan'&&guides;
 if(!drag&&!playing)yw+=dt*.03;const R=(narrow()?17:13)*zm,el=.62;cam.position.set(Math.sin(yw)*R*Math.cos(el),R*Math.sin(el),Math.cos(yw)*R*Math.cos(el));if(shake>0)cam.position.add(V((Math.random()-.5)*shake*.5,(Math.random()-.5)*shake*.5,(Math.random()-.5)*shake*.5));cam.lookAt(0,0,0);
 const j=$('#pJ'),pb=$('#pB'),jh=!j.classList.contains('off')&&!j.classList.contains('min')&&narrow()?j.getBoundingClientRect().bottom-44:0,bh=pb.classList.contains('off')?0:pb.getBoundingClientRect().height,tgt=(bh-jh)/(narrow()?2:2.6),oy=cam.userData.oy||0;
 cam.userData.oy=oy+(tgt-oy)*(1-Math.exp(-dt*6));cam.setViewOffset(innerWidth,innerHeight,0,cam.userData.oy,innerWidth,innerHeight);
