@@ -6,8 +6,15 @@ Browser-based orbital strategy games. Static site, no build step.
 
 ```
 orbital-command/
-├── index.html          # intro page, mode selector and Planetary Defence
-├── solar-sandbox.html  # Solar Sandbox (linked from the menu)
+├── index.html            # intro page and mode selector
+├── defence.html          # Planetary Defence: 3D globe with stage-driven HUD panels
+├── solar-sandbox.html    # Solar Sandbox
+├── manifest.webmanifest  # PWA manifest (install to home screen)
+├── sw.js                 # service worker: offline play and caching
+├── icons/                # app icons
+├── js/
+│   ├── sim.js            # deterministic orbit simulation and level data (no DOM)
+│   └── globe.js          # realistic Earth (CDN textures, generated fallback)
 └── README.md
 ```
 
@@ -19,7 +26,8 @@ orbital-command/
 
 ## Notes
 
-- Links between pages are relative (`./solar-sandbox.html`, `./index.html`), so keep the files side by side.
+- Links between pages and scripts are relative, so keep the folder layout above.
 - Three.js loads from cdnjs. The menu globe loads NASA Earth textures from jsDelivr (three.js examples) and falls back to a generated globe if they cannot load.
 - Earth imagery credit: NASA, as distributed with the three.js examples. Check the terms before store release.
 - Progress and the Solar Sandbox fleet are saved in the browser (localStorage).
+- **Offline / install:** after one online visit the pages, Three.js, fonts and Earth textures are cached, so the game runs offline and can be added to the home screen. Bump `CACHE` in `sw.js` (for example `oc-v2`) on each release so players get updates.

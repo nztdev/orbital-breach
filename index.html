@@ -33,7 +33,7 @@ button:disabled{opacity:.4}button.on{background:#2a5cff;border-color:#7aa2ff}
 .mr em{font-style:normal;font-size:10px;padding:3px 7px;border:1px solid #4cc9ff;color:#4cc9ff}
 .mr.lk{opacity:.45;cursor:default;border-left-color:#456}.mr.lk em{border-color:#567;color:#89a}
 @media(max-width:700px){.ct{align-items:flex-end;padding:0 14px 6px}.tb{margin:18px 18px 0}.bt{margin:0 18px 18px}.mr{padding:9px 12px}.mr span{display:none}#M h1{font-size:24px;margin-bottom:10px}}
-</style><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet"></head><body>
+</style><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#02030a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Orbital Command"><link rel="apple-touch-icon" href="./icons/apple-touch-icon.png"><link rel="icon" href="./icons/icon-192.png"></head><body>
 <canvas id="c"></canvas><canvas id="c3" hidden></canvas><div id="st3" style="position:fixed;left:14px;top:70px;pointer-events:none;font-size:12px"></div>
 <div id="M" class="ov"><div class="cn a"></div><div class="cn b"></div><div class="cn c"></div><div class="cn d"></div>
 <div class="tb"><b>◢ ORBITAL COMMAND</b><span class="sp"></span><span id="utc"></span><span class="ok">● SYSTEM ONLINE</span></div>
@@ -259,4 +259,4 @@ r3.render(s3,cam3)}
 setInterval(()=>{$('#utc').textContent=new Date().toISOString().slice(11,19)+' UTC'},1000);
 cv.hidden=true;c3.hidden=false;
 $('#gd').onclick=()=>{location.href='./defence.html'};
-</script></body></html>
+</script><script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));</script></body></html>

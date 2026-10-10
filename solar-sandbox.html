@@ -13,7 +13,7 @@ button.on{background:#2a5cff;border-color:#7aa2ff}
 .r{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 #info{line-height:1.4}.h{opacity:.6;font-size:11px}
 .l{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;font-size:11px;color:#bcd4ff;text-shadow:0 0 4px #000;white-space:nowrap}
-</style></head><body>
+</style><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#02030a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Orbital Command"><link rel="apple-touch-icon" href="./icons/apple-touch-icon.png"><link rel="icon" href="./icons/icon-192.png"></head><body>
 <canvas id="c"></canvas><div id="L"></div>
 <div id="ui"><div id="nav" class="p"><a href="./index.html" style="background:#0c1a3a;color:#cfe3ff;border:1px solid #34507f;border-radius:6px;padding:5px 8px;text-decoration:none;white-space:nowrap">☰ Menu</a></div>
 <div id="dock" class="p"><div id="info"></div><div class="r" id="tm"></div>
@@ -109,4 +109,4 @@ rd.render(sc,cam);
 bodies.forEach(b=>{b.pivot.getWorldPosition(tmp);tmp.project(cam);const s=b.lab.style;
 if(tmp.z>1||b==foc||(b.n=='Moon'&&foc.n!='Earth'&&foc.n!='Moon'))s.display='none';else{s.display='block';s.transform='translate('+(tmp.x*.5+.5)*innerWidth+'px,'+(-tmp.y*.5+.5)*innerHeight+'px) translate(-50%,-160%)'}})}
 requestAnimationFrame(frame);
-</script></body></html>
+</script><script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));</script></body></html>
